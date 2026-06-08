@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/selector_server_tab"
+    android:textColor="@drawable/selector_server_tab_text"
+    android:textSize="13sp"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp"
+    android:fontFamily="sans-serif-medium" />

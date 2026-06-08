@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PhimHay</string>
+    <string name="home">Trang chủ</string>
+    <string name="search">Tìm kiếm</string>
+    <string name="categories">Thể loại</string>
+    <string name="profile">Tài khoản</string>
+    <string name="new_movies">Phim mới cập nhật</string>
+    <string name="series">Phim bộ</string>
+    <string name="single">Phim lẻ</string>
+    <string name="see_all">Xem tất cả</string>
+    <string name="search_hint">Tìm kiếm phim, diễn viên...</string>
+    <string name="content_desc">Nội dung</string>
+    <string name="actors">Diễn viên</string>
+    <string name="director">Đạo diễn</string>
+    <string name="country">Quốc gia</string>
+    <string name="genre">Thể loại</string>
+    <string name="watch_now">▶  Xem ngay</string>
+    <string name="episodes">Danh sách tập</string>
+    <string name="loading">Đang tải...</string>
+    <string name="error_load">Không thể tải dữ liệu</string>
+    <string name="retry">Thử lại</string>
+</resources>

@@ -1,1 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark Cinema Palette -->
+    <color name="bg_primary">#0A0A0F</color>
+    <color name="bg_secondary">#12121A</color>
+    <color name="bg_card">#1A1A26</color>
+    <color name="bg_surface">#22223A</color>
 
+    <!-- Accent: Cinematic Red-Orange -->
+    <color name="accent_primary">#FF4757</color>
+    <color name="accent_secondary">#FF6B35</color>
+    <color name="accent_gold">#FFD700</color>
+
+    <!-- Text -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0CC</color>
+    <color name="text_muted">#666680</color>
+
+    <!-- Tags -->
+    <color name="tag_hd">#00D4AA</color>
+    <color name="tag_fhd">#6C63FF</color>
+    <color name="tag_quality_bg">#1A1A26</color>
+
+    <!-- Bottom nav -->
+    <color name="nav_selected">#FF4757</color>
+    <color name="nav_unselected">#666680</color>
+
+    <!-- Overlay -->
+    <color name="overlay_gradient_start">#00000000</color>
+    <color name="overlay_gradient_end">#E6000000</color>
+
+    <color name="colorPrimary">#FF4757</color>
+    <color name="colorPrimaryDark">#0A0A0F</color>
+    <color name="colorAccent">#FF4757</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+</resources>

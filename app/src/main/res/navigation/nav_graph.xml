@@ -1,1 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
 
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.phimapp.ui.home.HomeFragment"
+        android:label="Trang chủ">
+        <action android:id="@+id/action_home_to_detail"
+            app:destination="@id/movieDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action android:id="@+id/action_home_to_search"
+            app:destination="@id/searchFragment" />
+        <action android:id="@+id/action_home_to_movieList"
+            app:destination="@id/categoryFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.phimapp.ui.search.SearchFragment"
+        android:label="Tìm kiếm">
+        <action android:id="@+id/action_search_to_detail"
+            app:destination="@id/movieDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/categoryFragment"
+        android:name="com.phimapp.ui.category.CategoryFragment"
+        android:label="Danh sách">
+        <argument android:name="slug" app:argType="string" android:defaultValue="" />
+        <argument android:name="title" app:argType="string" android:defaultValue="Danh sách phim" />
+        <argument android:name="isCategory" app:argType="boolean" android:defaultValue="true" />
+        <action android:id="@+id/action_category_to_detail"
+            app:destination="@id/movieDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/movieDetailFragment"
+        android:name="com.phimapp.ui.detail.MovieDetailFragment"
+        android:label="Chi tiết">
+        <argument android:name="slug" app:argType="string" />
+        <action android:id="@+id/action_detail_to_player"
+            app:destination="@id/playerFragment"
+            app:enterAnim="@anim/slide_in_up"
+            app:popExitAnim="@anim/slide_out_down" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="com.phimapp.ui.detail.PlayerFragment"
+        android:label="Xem phim">
+        <argument android:name="link" app:argType="string" />
+        <argument android:name="title" app:argType="string" android:defaultValue="" />
+        <argument android:name="isM3u8" app:argType="boolean" android:defaultValue="true" />
+    </fragment>
+
+</navigation>

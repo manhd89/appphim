@@ -13,7 +13,30 @@ android {
         minSdk 24
         targetSdk 34
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("KEYSTORE_PATH") ?: "phimhay-release.jks")
+            storePassword System.getenv("KEYSTORE_PASS") ?: "phimhay123"
+            keyAlias System.getenv("KEY_ALIAS") ?: "phimhay"
+            keyPassword System.getenv("KEY_PASS") ?: "phimhay123"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            debuggable true
+        }
     }
 
     buildFeatures {
@@ -26,6 +49,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = '17'
+    }
+
+    lint {
+        abortOnError false
     }
 }
 
@@ -63,4 +90,10 @@ dependencies {
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+
+    // FlexboxLayout for episode grid
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }

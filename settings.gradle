@@ -15,5 +15,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PhimApp"
+rootProject.name = "PhimHay"
 include ':app'

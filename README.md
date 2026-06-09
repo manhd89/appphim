@@ -1,139 +1,145 @@
-# 🎬 PhimHay - Ứng dụng xem phim Android Kotlin
+# 🎬 PhimHay — Android Movie App (Kotlin + KKPhim API)
 
-Ứng dụng xem phim Android được xây dựng với Kotlin, tích hợp API từ **phimapi.com** (KKPhim).
+<p align="center">
+  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="96" alt="PhimHay Icon">
+</p>
 
----
+<p align="center">
+  <a href="../../actions/workflows/android-release.yml">
+    <img alt="Build" src="https://github.com/YOUR_USERNAME/PhimHay/actions/workflows/android-release.yml/badge.svg">
+  </a>
+  <img alt="Min SDK" src="https://img.shields.io/badge/minSdk-24-green">
+  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-1.9-blueviolet">
+</p>
 
-## ✨ Tính năng
-
-- 🏠 **Trang chủ** — Banner phim nổi bật, phim mới cập nhật, phim bộ, phim lẻ
-- 🔍 **Tìm kiếm** — Tìm phim theo tên/từ khóa realtime
-- 📂 **Thể loại & Quốc gia** — Duyệt phim theo phân loại, hỗ trợ phân trang
-- 🎬 **Chi tiết phim** — Poster, backdrop, thông tin đầy đủ, danh sách tập
-- ▶️ **Trình phát video** — ExoPlayer hỗ trợ HLS (M3U8) & embed links
-- 🌙 **Dark Cinema UI** — Giao diện đêm sang trọng, màu đỏ-đen
-
----
-
-## 🛠️ Công nghệ
-
-| Thư viện | Mục đích |
-|---|---|
-| Kotlin Coroutines | Async/non-blocking |
-| Retrofit 2 + OkHttp | HTTP client & REST API |
-| Gson | JSON parsing |
-| Glide | Tải & cache ảnh |
-| ExoPlayer (Media3) | Phát video HLS/M3U8 |
-| Navigation Component | Điều hướng fragment |
-| ViewModel + LiveData | MVVM architecture |
-| Material Design 3 | UI components |
+Ứng dụng xem phim Android viết bằng Kotlin, dùng API [phimapi.com](https://phimapi.com) (KKPhim).
+Giao diện **Dark Cinema** — đen tối, accent đỏ, sang trọng.
 
 ---
 
-## 🏗️ Kiến trúc MVVM
+## 🚀 Cài đặt (Lần đầu)
 
-```
-com.phimapp/
-├── model/          # Data classes (MovieItem, Episode, ...)
-├── network/        # Retrofit API service
-├── data/           # Repository pattern
-├── viewmodel/      # ViewModels (Home, Detail, Search, Category)
-└── ui/
-    ├── home/       # HomeFragment
-    ├── detail/     # MovieDetailFragment, PlayerFragment
-    ├── search/     # SearchFragment
-    └── category/   # CategoryFragment
-```
+### 1. Clone và setup
 
----
-
-## 🚀 Cài đặt & Chạy
-
-### Yêu cầu
-- Android Studio Hedgehog (2023.1.1) trở lên
-- JDK 17
-- Android SDK 34
-- Gradle 8.2+
-
-### Bước 1: Clone / Copy project
 ```bash
-git clone <repo-url>
-cd PhimApp
+git clone https://github.com/YOUR_USERNAME/PhimHay.git
+cd PhimHay
+bash scripts/setup.sh
 ```
 
-### Bước 2: Thêm FlexboxLayout dependency
-Trong `app/build.gradle`, thêm:
-```gradle
-implementation 'com.google.android.flexbox:flexbox:3.0.0'
-```
+Script `setup.sh` sẽ tự động:
+- Download `gradle/wrapper/gradle-wrapper.jar` từ Gradle chính thức
+- Verify/tạo keystore `app/phimhay-release.jks`
+- In ra các giá trị cần thêm vào GitHub Secrets
 
-> **Lưu ý:** FlexboxLayout được dùng trong layout tập phim (episodeGrid).
-> Nếu không muốn dùng, thay bằng `FlowLayout` hoặc `WrapLinearLayout` tùy chỉnh.
+### 2. Build local
 
-### Bước 3: Sync & Build
+```bash
+./gradlew assembleDebug          # Debug APK
+./gradlew assembleRelease        # Release APK (cần keystore)
+./gradlew bundleRelease          # Release AAB
 ```
-File → Sync Project with Gradle Files
-Build → Make Project
-```
-
-### Bước 4: Chạy trên máy ảo/thật
-- Mininum SDK: Android 7.0 (API 24)
-- Target: Android 14 (API 34)
 
 ---
 
-## 📱 Giao diện
+## 🔐 GitHub Actions — Cấu hình Secrets
 
-### Palette màu sắc
-```
-bg_primary:    #0A0A0F  (nền chính đen đậm)
-bg_card:       #1A1A26  (card tối)
-accent_primary: #FF4757 (đỏ cinematic)
-accent_gold:   #FFD700  (vàng cho số tập)
-tag_fhd:       #6C63FF  (tím cho FHD/phim bộ)
-tag_hd:        #00D4AA  (xanh ngọc cho HD)
-```
+Vào **repo Settings → Secrets and variables → Actions → New repository secret**:
 
-### Screens
-1. **HomeFragment** — Carousel banner ngang + Grid 3 cột + Horizontal scrolls
-2. **SearchFragment** — Search bar + Grid kết quả
-3. **MovieDetailFragment** — Hero backdrop + poster + thông tin đầy đủ + tập phim
-4. **PlayerFragment** — Fullscreen ExoPlayer với HLS support
-5. **CategoryFragment** — Grid phim + infinite scroll
-
----
-
-## 🌐 API Endpoints sử dụng
-
-| Endpoint | Mô tả |
+| Secret name | Giá trị |
 |---|---|
-| `GET /danh-sach/phim-moi-cap-nhat-v3?page=1` | Phim mới |
-| `GET /phim/{slug}` | Chi tiết + tập phim |
-| `GET /v1/api/danh-sach/{type}?page=1` | Danh sách theo loại |
-| `GET /v1/api/tim-kiem?keyword=...` | Tìm kiếm |
-| `GET /the-loai` | Danh sách thể loại |
-| `GET /quoc-gia` | Danh sách quốc gia |
-| `GET /v1/api/the-loai/{slug}` | Phim theo thể loại |
-| `GET /v1/api/quoc-gia/{slug}` | Phim theo quốc gia |
+| `KEYSTORE_BASE64` | Output của `base64 -w0 app/phimhay-release.jks` |
+| `KEYSTORE_PASS` | `phimhay123` |
+| `KEY_ALIAS` | `phimhay` |
+| `KEY_PASS` | `phimhay123` |
 
-Base URL: `https://phimapi.com/`
+> ⚠️ **Quan trọng:** Đây là keystore demo. Với production app, hãy tạo keystore riêng với password mạnh hơn và **KHÔNG commit** vào git.
 
----
+### Lấy KEYSTORE_BASE64
 
-## 📝 Ghi chú
+```bash
+# macOS / Linux
+base64 -w 0 app/phimhay-release.jks
 
-- App **không lưu trữ** bất kỳ video nào — chỉ stream từ nguồn bên ngoài
-- Cần **kết nối internet** để hoạt động
-- Một số phim dùng embed link (WebView) thay vì M3U8 — cần thêm WebViewFragment nếu muốn hỗ trợ đầy đủ
+# Windows
+certutil -encode app\phimhay-release.jks tmp.b64 && type tmp.b64
+```
 
 ---
 
-## 🔧 Mở rộng thêm
+## 🏷️ Release qua tag
 
-- [ ] Thêm WebView player cho embed links
-- [ ] Lịch sử xem phim (Room Database)
-- [ ] Danh sách yêu thích
-- [ ] Download phim offline (nếu API hỗ trợ)
-- [ ] Chế độ ngang (Landscape) cho player
-- [ ] Phụ đề (Subtitle support)
-- [ ] Cast to TV (Chromecast)
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions sẽ tự động build APK + AAB và tạo GitHub Release.
+
+---
+
+## 📁 Cấu trúc project
+
+```
+PhimHay/
+├── .github/workflows/
+│   └── android-release.yml   # CI/CD pipeline
+├── app/
+│   ├── phimhay-release.jks   # Keystore (demo — đổi cho production!)
+│   ├── phimhay-release.jks.b64  # Base64 của keystore
+│   ├── build.gradle
+│   └── src/main/
+│       ├── java/com/phimapp/
+│       │   ├── model/        # Data classes
+│       │   ├── network/      # Retrofit API
+│       │   ├── data/         # Repository
+│       │   ├── viewmodel/    # ViewModels
+│       │   └── ui/           # Fragments
+│       └── res/              # Layouts, drawables, icons
+├── gradle/wrapper/
+│   ├── gradle-wrapper.jar    # ← Cần chạy setup.sh để download
+│   └── gradle-wrapper.properties
+├── gradlew
+├── gradlew.bat
+├── scripts/
+│   └── setup.sh              # First-time setup
+└── build.gradle
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Thư viện | Version | Mục đích |
+|---|---|---|
+| Kotlin | 1.9.22 | Ngôn ngữ chính |
+| Retrofit 2 | 2.9.0 | HTTP / REST API |
+| OkHttp | 4.12.0 | HTTP client |
+| Gson | 2.9.0 | JSON parsing |
+| Glide | 4.16.0 | Image loading |
+| ExoPlayer (Media3) | 1.2.1 | HLS video player |
+| Navigation Component | 2.7.6 | Fragment navigation |
+| ViewModel + LiveData | 2.7.0 | MVVM |
+| FlexboxLayout | 3.0.0 | Episode grid |
+| Material Design | 1.11.0 | UI components |
+
+---
+
+## 🎨 Design System
+
+```
+Background:  #0A0A0F  (đen đậm cinema)
+Card:        #1A1A26  (dark navy)
+Accent:      #FF4757  (đỏ cinematic)
+Gold:        #FFD700  (số tập)
+Purple:      #6C63FF  (phim bộ)
+Teal:        #00D4AA  (phim lẻ)
+```
+
+---
+
+## ⚠️ Lưu ý
+
+- `gradle-wrapper.jar` **không được commit** do giới hạn host — chạy `setup.sh` để download
+- Keystore demo chỉ dùng để test. Với production, tạo keystore mới và bảo mật cẩn thận
+- App stream video từ nguồn bên ngoài, cần internet

@@ -1,1 +1,3 @@
-PLACEHOLDER: Run 'bash scripts/setup.sh' to download the real gradle-wrapper.jar from https://services.gradle.org
+PLACEHOLDER: This file must be replaced before building.
+Run: bash scripts/setup.sh
+OR the GitHub Actions workflow will call `gradle` directly (setup-gradle action).

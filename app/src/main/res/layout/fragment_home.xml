@@ -101,7 +101,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Mới Cập Nhật"
-                    style="@style/TextAppearance.PhimApp.SectionHeader" />
+                    style="@style/PhimApp.TextSectionHeader" />
 
                 <TextView
                     android:id="@+id/btnSeeAllNew"
@@ -144,7 +144,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Phim Bộ"
-                    style="@style/TextAppearance.PhimApp.SectionHeader" />
+                    style="@style/PhimApp.TextSectionHeader" />
 
                 <TextView
                     android:id="@+id/btnSeeAllSeries"
@@ -187,7 +187,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Phim Lẻ"
-                    style="@style/TextAppearance.PhimApp.SectionHeader" />
+                    style="@style/PhimApp.TextSectionHeader" />
 
                 <TextView
                     android:id="@+id/btnSeeAllSingle"

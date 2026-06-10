@@ -36,7 +36,7 @@ class MovieAdapter(
         init {
             view.setOnClickListener {
                 val pos = adapterPosition
-                if (pos != RecyclerView.NO_ID) onItemClick(getItem(pos))
+                if (pos != RecyclerView.NO_POSITION) onItemClick(getItem(pos))
             }
         }
     }
@@ -49,7 +49,7 @@ class MovieAdapter(
         init {
             view.setOnClickListener {
                 val pos = adapterPosition
-                if (pos != RecyclerView.NO_ID) onItemClick(getItem(pos))
+                if (pos != RecyclerView.NO_POSITION) onItemClick(getItem(pos))
             }
         }
     }
@@ -64,7 +64,7 @@ class MovieAdapter(
         init {
             view.setOnClickListener {
                 val pos = adapterPosition
-                if (pos != RecyclerView.NO_ID) onItemClick(getItem(pos))
+                if (pos != RecyclerView.NO_POSITION) onItemClick(getItem(pos))
             }
         }
     }

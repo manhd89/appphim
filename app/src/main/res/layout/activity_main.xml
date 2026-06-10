@@ -22,7 +22,6 @@
         android:background="@color/bg_secondary"
         app:itemIconTint="@color/nav_unselected"
         app:itemTextColor="@color/nav_unselected"
-        app:itemActiveIndicatorColor="@color/transparent"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu"
         app:itemIconSize="24dp"

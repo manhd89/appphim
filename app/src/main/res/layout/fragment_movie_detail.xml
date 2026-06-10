@@ -236,7 +236,7 @@
                     android:textSize="16sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.05"
-                    style="@style/PhimApp.ButtonPrimary" />
+                    style="@style/PhimButtonPrimary" />
 
                 <!-- Divider -->
                 <View android:layout_width="match_parent" android:layout_height="1dp"

@@ -34,4 +34,5 @@
     <color name="colorAccent">#FF4757</color>
     <color name="white">#FFFFFF</color>
     <color name="transparent">#00000000</color>
+    <color name="ic_launcher_background">#0A0A0F</color>
 </resources>

@@ -2,20 +2,18 @@ package com.phimapp.ui.detail
 
 import android.os.Bundle
 import android.view.*
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.phimapp.R
 import com.phimapp.data.Result
 import com.phimapp.databinding.FragmentMovieDetailBinding
 import com.phimapp.model.Episode
 import com.phimapp.model.EpisodeServer
+import com.phimapp.model.MovieDetailResponse
 import com.phimapp.viewmodel.MovieDetailViewModel
 
 class MovieDetailFragment : Fragment() {
@@ -23,6 +21,7 @@ class MovieDetailFragment : Fragment() {
     private var _binding: FragmentMovieDetailBinding? = null
     private val binding get() = _binding!!
     private val viewModel: MovieDetailViewModel by viewModels()
+
     private var episodeServers: List<EpisodeServer> = emptyList()
     private var selectedServerIndex = 0
 
@@ -35,10 +34,9 @@ class MovieDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val slug = arguments?.getString("slug") ?: return
-        viewModel.loadDetail(slug)
-
         binding.btnBack.setOnClickListener { findNavController().popBackStack() }
 
+        viewModel.loadDetail(slug)
         viewModel.detail.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is Result.Loading -> {
@@ -48,7 +46,6 @@ class MovieDetailFragment : Fragment() {
                 is Result.Success -> {
                     binding.progressBar.visibility = View.GONE
                     binding.contentGroup.visibility = View.VISIBLE
-                    val movie = result.data.movie ?: return@observe
                     episodeServers = result.data.episodes ?: emptyList()
                     displayMovieInfo(result.data)
                     setupEpisodes()
@@ -62,39 +59,36 @@ class MovieDetailFragment : Fragment() {
         }
     }
 
-    private fun displayMovieInfo(data: com.phimapp.model.MovieDetailResponse) {
+    private fun displayMovieInfo(data: MovieDetailResponse) {
         val movie = data.movie ?: return
 
-        // Backdrop
-        Glide.with(this)
-            .load(movie.thumbUrl)
-            .into(binding.imgBackdrop)
+        // Ảnh — dùng fullThumbUrl() / fullPosterUrl() để đảm bảo có domain
+        Glide.with(this).load(movie.fullThumbUrl()).into(binding.imgBackdrop)
+        Glide.with(this).load(movie.fullPosterUrl()).into(binding.imgPoster)
 
-        // Poster
-        Glide.with(this)
-            .load(movie.posterUrl)
-            .into(binding.imgPoster)
-
-        binding.tvTitle.text = movie.name
+        binding.tvTitle.text       = movie.name
         binding.tvOriginTitle.text = movie.originName ?: ""
-        binding.tvYear.text = movie.year?.toString() ?: ""
-        binding.tvQuality.text = movie.quality ?: "HD"
-        binding.tvLang.text = movie.lang ?: ""
-        binding.tvTime.text = movie.time ?: ""
-        binding.tvEpisode.text = "${movie.episodeCurrent ?: ""} / ${movie.episodeTotal ?: "?"}"
+        binding.tvYear.text        = movie.year?.toString() ?: ""
+        binding.tvQuality.text     = movie.quality ?: "HD"
+        binding.tvLang.text        = movie.lang ?: ""
+        binding.tvTime.text        = movie.time ?: ""
+        binding.tvEpisode.text     = buildString {
+            append(movie.episodeCurrent ?: "")
+            val total = movie.episodeTotal
+            if (!total.isNullOrBlank()) append(" / $total")
+        }
         binding.tvStatus.text = when (movie.status) {
             "completed" -> "Hoàn tất"
-            "ongoing" -> "Đang chiếu"
-            else -> movie.status ?: ""
+            "ongoing"   -> "Đang chiếu"
+            else        -> movie.status ?: ""
         }
 
-        val content = movie.content ?: "Chưa có mô tả"
-        binding.tvContent.text = HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_COMPACT)
-
-        binding.tvCategories.text = movie.category?.joinToString(" · ") { it.name } ?: ""
-        binding.tvCountry.text = movie.country?.joinToString(", ") { it.name } ?: ""
-        binding.tvActors.text = movie.actor?.take(5)?.joinToString(", ") ?: "Chưa có thông tin"
-        binding.tvDirector.text = movie.director?.joinToString(", ") ?: "Chưa có thông tin"
+        binding.tvContent.text     = HtmlCompat.fromHtml(
+            movie.content ?: "Chưa có mô tả", HtmlCompat.FROM_HTML_MODE_COMPACT)
+        binding.tvCategories.text  = movie.category?.joinToString(" · ") { it.name } ?: ""
+        binding.tvCountry.text     = movie.country?.joinToString(", ") { it.name } ?: ""
+        binding.tvActors.text      = movie.actor?.take(5)?.joinToString(", ") ?: "Chưa có thông tin"
+        binding.tvDirector.text    = movie.director?.joinToString(", ") ?: "Chưa có thông tin"
     }
 
     private fun setupEpisodes() {
@@ -107,9 +101,10 @@ class MovieDetailFragment : Fragment() {
         // Server tabs
         binding.serverTabLayout.removeAllViews()
         episodeServers.forEachIndexed { index, server ->
-            val tab = layoutInflater.inflate(R.layout.item_server_tab, binding.serverTabLayout, false) as TextView
+            val tab = layoutInflater.inflate(
+                R.layout.item_server_tab, binding.serverTabLayout, false) as TextView
             tab.text = server.serverName
-            tab.isSelected = index == selectedServerIndex
+            tab.isSelected = (index == selectedServerIndex)
             tab.setOnClickListener {
                 selectedServerIndex = index
                 setupEpisodes()
@@ -117,31 +112,33 @@ class MovieDetailFragment : Fragment() {
             binding.serverTabLayout.addView(tab)
         }
 
-        // Episodes grid
+        // Episode chips
         val currentServer = episodeServers.getOrNull(selectedServerIndex) ?: return
         binding.episodeGrid.removeAllViews()
-        currentServer.serverData.forEachIndexed { index, episode ->
-            val epView = layoutInflater.inflate(R.layout.item_episode_chip, binding.episodeGrid, false) as TextView
-            epView.text = episode.name
-            epView.setOnClickListener { playEpisode(episode) }
-            binding.episodeGrid.addView(epView)
+        currentServer.serverData.forEach { episode ->
+            val chip = layoutInflater.inflate(
+                R.layout.item_episode_chip, binding.episodeGrid, false) as TextView
+            chip.text = episode.name
+            chip.setOnClickListener { playEpisode(episode) }
+            binding.episodeGrid.addView(chip)
         }
 
-        // Play first episode button
-        val firstEp = currentServer.serverData.firstOrNull()
-        if (firstEp != null) {
-            binding.btnPlay.setOnClickListener { playEpisode(firstEp) }
+        // Play first episode
+        currentServer.serverData.firstOrNull()?.let { first ->
+            binding.btnPlay.setOnClickListener { playEpisode(first) }
         }
     }
 
     private fun playEpisode(episode: Episode) {
         val link = episode.linkM3u8 ?: episode.linkEmbed ?: return
-        findNavController().navigate(R.id.action_detail_to_player,
+        findNavController().navigate(
+            R.id.action_detail_to_player,
             Bundle().apply {
                 putString("link", link)
                 putString("title", episode.filename ?: episode.name)
                 putBoolean("isM3u8", episode.linkM3u8 != null)
-            })
+            }
+        )
     }
 
     override fun onDestroyView() {

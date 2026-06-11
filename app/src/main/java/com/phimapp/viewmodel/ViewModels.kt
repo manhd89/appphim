@@ -6,11 +6,12 @@ import com.phimapp.data.Result
 import com.phimapp.model.*
 import kotlinx.coroutines.launch
 
+// ─── HomeViewModel ────────────────────────────────────────────────────────────
 class HomeViewModel : ViewModel() {
 
-    private val repository = MovieRepository()
+    private val repo = MovieRepository()
 
-    private val _newMovies = MutableLiveData<Result<List<MovieItem>>>()
+    private val _newMovies    = MutableLiveData<Result<List<MovieItem>>>()
     val newMovies: LiveData<Result<List<MovieItem>>> = _newMovies
 
     private val _seriesMovies = MutableLiveData<Result<List<MovieItem>>>()
@@ -19,63 +20,35 @@ class HomeViewModel : ViewModel() {
     private val _singleMovies = MutableLiveData<Result<List<MovieItem>>>()
     val singleMovies: LiveData<Result<List<MovieItem>>> = _singleMovies
 
-    private val _categories = MutableLiveData<Result<List<GenreItem>>>()
-    val categories: LiveData<Result<List<GenreItem>>> = _categories
-
     fun loadHomeData() {
         loadNewMovies()
-        loadSeriesMovies()
-        loadSingleMovies()
-        loadCategories()
+        loadSection("phim-bo",  _seriesMovies)
+        loadSection("phim-le",  _singleMovies)
     }
 
     private fun loadNewMovies() {
         _newMovies.value = Result.Loading
         viewModelScope.launch {
-            val result = repository.getNewMovies(1)
-            _newMovies.value = when (result) {
-                is Result.Success -> Result.Success(result.data.items)
-                is Result.Error -> Result.Error(result.message)
-                else -> Result.Error("Lỗi không xác định")
-            }
+            _newMovies.value = repo.getNewMovies(1)
         }
     }
 
-    private fun loadSeriesMovies() {
-        _seriesMovies.value = Result.Loading
+    private fun loadSection(type: String, target: MutableLiveData<Result<List<MovieItem>>>) {
+        target.value = Result.Loading
         viewModelScope.launch {
-            val result = repository.getMovieList("phim-bo", 1)
-            _seriesMovies.value = when (result) {
-                is Result.Success -> Result.Success(result.data.data?.items ?: emptyList())
-                is Result.Error -> Result.Error(result.message)
-                else -> Result.Error("Lỗi không xác định")
+            target.value = when (val r = repo.getMovieList(type, 1)) {
+                is Result.Success -> Result.Success(r.data.data?.items ?: emptyList())
+                is Result.Error   -> Result.Error(r.message)
+                else              -> Result.Error("Lỗi không xác định")
             }
-        }
-    }
-
-    private fun loadSingleMovies() {
-        _singleMovies.value = Result.Loading
-        viewModelScope.launch {
-            val result = repository.getMovieList("phim-le", 1)
-            _singleMovies.value = when (result) {
-                is Result.Success -> Result.Success(result.data.data?.items ?: emptyList())
-                is Result.Error -> Result.Error(result.message)
-                else -> Result.Error("Lỗi không xác định")
-            }
-        }
-    }
-
-    private fun loadCategories() {
-        viewModelScope.launch {
-            val result = repository.getCategories()
-            _categories.value = result
         }
     }
 }
 
+// ─── MovieDetailViewModel ─────────────────────────────────────────────────────
 class MovieDetailViewModel : ViewModel() {
 
-    private val repository = MovieRepository()
+    private val repo = MovieRepository()
 
     private val _detail = MutableLiveData<Result<MovieDetailResponse>>()
     val detail: LiveData<Result<MovieDetailResponse>> = _detail
@@ -83,14 +56,15 @@ class MovieDetailViewModel : ViewModel() {
     fun loadDetail(slug: String) {
         _detail.value = Result.Loading
         viewModelScope.launch {
-            _detail.value = repository.getMovieDetail(slug)
+            _detail.value = repo.getMovieDetail(slug)
         }
     }
 }
 
+// ─── SearchViewModel ──────────────────────────────────────────────────────────
 class SearchViewModel : ViewModel() {
 
-    private val repository = MovieRepository()
+    private val repo = MovieRepository()
 
     private val _results = MutableLiveData<Result<List<MovieItem>>>()
     val results: LiveData<Result<List<MovieItem>>> = _results
@@ -99,72 +73,63 @@ class SearchViewModel : ViewModel() {
         if (keyword.isBlank()) return
         _results.value = Result.Loading
         viewModelScope.launch {
-            val result = repository.searchMovies(keyword)
-            _results.value = when (result) {
-                is Result.Success -> Result.Success(result.data.data?.items ?: emptyList())
-                is Result.Error -> Result.Error(result.message)
-                else -> Result.Error("Lỗi không xác định")
+            _results.value = when (val r = repo.searchMovies(keyword)) {
+                is Result.Success -> Result.Success(r.data.data?.items ?: emptyList())
+                is Result.Error   -> Result.Error(r.message)
+                else              -> Result.Error("Lỗi không xác định")
             }
         }
     }
 }
 
+// ─── CategoryViewModel — dùng cho thể loại, quốc gia, danh sách tổng hợp ────
 class CategoryViewModel : ViewModel() {
 
-    private val repository = MovieRepository()
+    private val repo = MovieRepository()
 
     private val _movies = MutableLiveData<Result<List<MovieItem>>>()
     val movies: LiveData<Result<List<MovieItem>>> = _movies
 
     private var currentPage = 1
-    private var totalPages = 1
+    private var totalPages  = 1
     private var currentSlug = ""
-    private var isCategory = true
+    private var mode        = Mode.CATEGORY
 
-    fun loadByCategory(slug: String) {
+    enum class Mode { CATEGORY, COUNTRY, TYPE }
+
+    fun loadByCategory(slug: String) { load(slug, Mode.CATEGORY) }
+    fun loadByCountry(slug: String)  { load(slug, Mode.COUNTRY) }
+    fun loadByType(type: String)     { load(type, Mode.TYPE) }
+
+    private fun load(slug: String, m: Mode) {
         currentSlug = slug
-        isCategory = true
+        mode        = m
         currentPage = 1
         _movies.value = Result.Loading
-        viewModelScope.launch {
-            val result = repository.getMoviesByCategory(slug, 1)
-            handleListResult(result)
-        }
-    }
-
-    fun loadByCountry(slug: String) {
-        currentSlug = slug
-        isCategory = false
-        currentPage = 1
-        _movies.value = Result.Loading
-        viewModelScope.launch {
-            val result = repository.getMoviesByCountry(slug, 1)
-            handleListResult(result)
-        }
+        viewModelScope.launch { fetch(append = false) }
     }
 
     fun loadNextPage() {
         if (currentPage >= totalPages) return
         currentPage++
-        viewModelScope.launch {
-            val result = if (isCategory)
-                repository.getMoviesByCategory(currentSlug, currentPage)
-            else
-                repository.getMoviesByCountry(currentSlug, currentPage)
-            handleListResult(result, append = true)
-        }
+        viewModelScope.launch { fetch(append = true) }
     }
 
-    private fun handleListResult(result: com.phimapp.data.Result<com.phimapp.network.ListWrapperResponse>, append: Boolean = false) {
+    private suspend fun fetch(append: Boolean) {
+        val result = when (mode) {
+            Mode.CATEGORY -> repo.getMoviesByCategory(currentSlug, currentPage)
+            Mode.COUNTRY  -> repo.getMoviesByCountry(currentSlug, currentPage)
+            Mode.TYPE     -> repo.getMovieList(currentSlug, currentPage)
+        }
         when (result) {
             is Result.Success -> {
                 val items = result.data.data?.items ?: emptyList()
                 totalPages = result.data.data?.params?.pagination?.totalPages ?: 1
-                if (append) {
-                    val current = (_movies.value as? Result.Success)?.data ?: emptyList()
-                    _movies.value = Result.Success(current + items)
+                _movies.value = if (append) {
+                    val old = (_movies.value as? Result.Success)?.data ?: emptyList()
+                    Result.Success(old + items)
                 } else {
-                    _movies.value = Result.Success(items)
+                    Result.Success(items)
                 }
             }
             is Result.Error -> _movies.value = Result.Error(result.message)

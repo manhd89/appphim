@@ -13,81 +13,73 @@ import java.util.concurrent.TimeUnit
 
 interface PhimApiService {
 
-    // Phim mới cập nhật V3
+    // Phim mới cập nhật V3 — poster_url đã full URL
     @GET("danh-sach/phim-moi-cap-nhat-v3")
     suspend fun getNewMovies(@Query("page") page: Int = 1): Response<MovieListResponse>
 
-    // Chi tiết phim
+    // Chi tiết phim + danh sách tập
     @GET("phim/{slug}")
     suspend fun getMovieDetail(@Path("slug") slug: String): Response<MovieDetailResponse>
 
-    // Danh sách tổng hợp
+    // Danh sách theo loại: phim-bo, phim-le, tv-shows, hoat-hinh...
+    // poster_url là relative → dùng .fullPosterUrl()
     @GET("v1/api/danh-sach/{type}")
     suspend fun getMovieList(
-        @Path("type") type: String,
-        @Query("page") page: Int = 1,
-        @Query("sort_field") sortField: String = "modified.time",
-        @Query("sort_type") sortType: String = "desc",
-        @Query("limit") limit: Int = 24
+        @Path("type")         type: String,
+        @Query("page")        page: Int = 1,
+        @Query("sort_field")  sortField: String = "modified.time",
+        @Query("sort_type")   sortType: String = "desc",
+        @Query("limit")       limit: Int = 24
     ): Response<ListWrapperResponse>
 
     // Tìm kiếm
     @GET("v1/api/tim-kiem")
     suspend fun searchMovies(
         @Query("keyword") keyword: String,
-        @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 24
-    ): Response<SearchResponse>
+        @Query("page")    page: Int = 1,
+        @Query("limit")   limit: Int = 24
+    ): Response<ListWrapperResponse>
 
-    // Thể loại list
+    // Danh sách thể loại — trả về bare array List<GenreItem>
     @GET("the-loai")
     suspend fun getCategories(): Response<List<GenreItem>>
 
-    // Quốc gia list
+    // Danh sách quốc gia — trả về bare array List<GenreItem>
     @GET("quoc-gia")
     suspend fun getCountries(): Response<List<GenreItem>>
 
     // Phim theo thể loại
     @GET("v1/api/the-loai/{slug}")
     suspend fun getMoviesByCategory(
-        @Path("slug") slug: String,
-        @Query("page") page: Int = 1,
+        @Path("slug")   slug: String,
+        @Query("page")  page: Int = 1,
         @Query("limit") limit: Int = 24
     ): Response<ListWrapperResponse>
 
     // Phim theo quốc gia
     @GET("v1/api/quoc-gia/{slug}")
     suspend fun getMoviesByCountry(
-        @Path("slug") slug: String,
-        @Query("page") page: Int = 1,
+        @Path("slug")   slug: String,
+        @Query("page")  page: Int = 1,
+        @Query("limit") limit: Int = 24
+    ): Response<ListWrapperResponse>
+
+    // Phim theo năm
+    @GET("v1/api/nam/{year}")
+    suspend fun getMoviesByYear(
+        @Path("year")   year: Int,
+        @Query("page")  page: Int = 1,
         @Query("limit") limit: Int = 24
     ): Response<ListWrapperResponse>
 }
 
-data class ListWrapperResponse(
-    @com.google.gson.annotations.SerializedName("status") val status: Boolean,
-    @com.google.gson.annotations.SerializedName("msg") val msg: String?,
-    @com.google.gson.annotations.SerializedName("data") val data: ListData?
-)
-
-data class ListData(
-    @com.google.gson.annotations.SerializedName("items") val items: List<com.phimapp.model.MovieItem>,
-    @com.google.gson.annotations.SerializedName("params") val params: ListParams?
-)
-
-data class ListParams(
-    @com.google.gson.annotations.SerializedName("pagination") val pagination: com.phimapp.model.Pagination?
-)
-
 object RetrofitClient {
     private const val BASE_URL = "https://phimapi.com/"
 
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BASIC
-    }
-
     private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
+        .addInterceptor(HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BASIC
+        })
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()

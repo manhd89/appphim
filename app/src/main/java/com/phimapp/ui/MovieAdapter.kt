@@ -22,105 +22,98 @@ class MovieAdapter(
 
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MovieItem>() {
-            override fun areItemsTheSame(oldItem: MovieItem, newItem: MovieItem) = oldItem.id == newItem.id
-            override fun areContentsTheSame(oldItem: MovieItem, newItem: MovieItem) = oldItem == newItem
+            override fun areItemsTheSame(a: MovieItem, b: MovieItem) = a.id == b.id
+            override fun areContentsTheSame(a: MovieItem, b: MovieItem) = a == b
         }
     }
 
-    inner class GridViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val poster: ImageView = view.findViewById(R.id.imgPoster)
-        val name: TextView = view.findViewById(R.id.tvName)
-        val episode: TextView = view.findViewById(R.id.tvEpisode)
-        val quality: TextView = view.findViewById(R.id.tvQuality)
+    // ── ViewHolders ──────────────────────────────────────────────────────────
 
-        init {
-            view.setOnClickListener {
-                val pos = adapterPosition
-                if (pos != RecyclerView.NO_POSITION) onItemClick(getItem(pos))
-            }
-        }
+    inner class GridViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val poster:  ImageView = view.findViewById(R.id.imgPoster)
+        val name:    TextView  = view.findViewById(R.id.tvName)
+        val episode: TextView  = view.findViewById(R.id.tvEpisode)
+        val quality: TextView  = view.findViewById(R.id.tvQuality)
+        init { view.setOnClickListener { click() } }
     }
 
     inner class HorizontalViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val poster: ImageView = view.findViewById(R.id.imgPoster)
-        val name: TextView = view.findViewById(R.id.tvName)
-        val meta: TextView = view.findViewById(R.id.tvMeta)
-
-        init {
-            view.setOnClickListener {
-                val pos = adapterPosition
-                if (pos != RecyclerView.NO_POSITION) onItemClick(getItem(pos))
-            }
-        }
+        val name:   TextView  = view.findViewById(R.id.tvName)
+        val meta:   TextView  = view.findViewById(R.id.tvMeta)
+        init { view.setOnClickListener { click() } }
     }
 
     inner class BannerViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val thumb: ImageView = view.findViewById(R.id.imgThumb)
-        val name: TextView = view.findViewById(R.id.tvName)
-        val episode: TextView = view.findViewById(R.id.tvEpisode)
-        val lang: TextView = view.findViewById(R.id.tvLang)
-        val categories: TextView = view.findViewById(R.id.tvCategories)
-
-        init {
-            view.setOnClickListener {
-                val pos = adapterPosition
-                if (pos != RecyclerView.NO_POSITION) onItemClick(getItem(pos))
-            }
-        }
+        val thumb:      ImageView = view.findViewById(R.id.imgThumb)
+        val name:       TextView  = view.findViewById(R.id.tvName)
+        val episode:    TextView  = view.findViewById(R.id.tvEpisode)
+        val lang:       TextView  = view.findViewById(R.id.tvLang)
+        val categories: TextView  = view.findViewById(R.id.tvCategories)
+        init { view.setOnClickListener { click() } }
     }
 
-    override fun getItemViewType(position: Int): Int = layoutType.ordinal
+    private fun RecyclerView.ViewHolder.click() {
+        val pos = adapterPosition
+        if (pos != RecyclerView.NO_POSITION) onItemClick(getItem(pos))
+    }
+
+    // ── Adapter overrides ────────────────────────────────────────────────────
+
+    override fun getItemViewType(position: Int) = layoutType.ordinal
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
+        val inf = LayoutInflater.from(parent.context)
         return when (LayoutType.values()[viewType]) {
-            LayoutType.GRID -> GridViewHolder(inflater.inflate(R.layout.item_movie_grid, parent, false))
-            LayoutType.HORIZONTAL -> HorizontalViewHolder(inflater.inflate(R.layout.item_movie_horizontal, parent, false))
-            LayoutType.BANNER -> BannerViewHolder(inflater.inflate(R.layout.item_movie_banner, parent, false))
+            LayoutType.GRID       -> GridViewHolder(inf.inflate(R.layout.item_movie_grid, parent, false))
+            LayoutType.HORIZONTAL -> HorizontalViewHolder(inf.inflate(R.layout.item_movie_horizontal, parent, false))
+            LayoutType.BANNER     -> BannerViewHolder(inf.inflate(R.layout.item_movie_banner, parent, false))
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position)
         when (holder) {
-            is GridViewHolder -> bindGrid(holder, item)
+            is GridViewHolder       -> bindGrid(holder, item)
             is HorizontalViewHolder -> bindHorizontal(holder, item)
-            is BannerViewHolder -> bindBanner(holder, item)
+            is BannerViewHolder     -> bindBanner(holder, item)
         }
     }
 
-    private fun bindGrid(holder: GridViewHolder, item: MovieItem) {
-        holder.name.text = item.name
-        holder.episode.text = item.episodeCurrent ?: item.year?.toString() ?: ""
-        holder.quality.text = item.quality ?: "HD"
-        Glide.with(holder.poster)
-            .load(item.posterUrl)
+    // ── Bind helpers — dùng fullPosterUrl() để luôn có domain đầy đủ ─────────
+
+    private fun bindGrid(h: GridViewHolder, item: MovieItem) {
+        h.name.text    = item.name
+        h.episode.text = item.episodeCurrent ?: item.year?.toString() ?: ""
+        h.quality.text = item.quality ?: "HD"
+        Glide.with(h.poster)
+            .load(item.fullPosterUrl())
             .transition(DrawableTransitionOptions.withCrossFade())
             .placeholder(R.drawable.placeholder_poster)
-            .into(holder.poster)
+            .into(h.poster)
     }
 
-    private fun bindHorizontal(holder: HorizontalViewHolder, item: MovieItem) {
-        holder.name.text = item.name
+    private fun bindHorizontal(h: HorizontalViewHolder, item: MovieItem) {
+        h.name.text = item.name
         val year = item.year?.toString() ?: ""
         val lang = item.lang ?: ""
-        holder.meta.text = if (year.isNotEmpty() && lang.isNotEmpty()) "$year · $lang" else year + lang
-        Glide.with(holder.poster)
-            .load(item.posterUrl)
+        h.meta.text = listOf(year, lang).filter { it.isNotEmpty() }.joinToString(" · ")
+        Glide.with(h.poster)
+            .load(item.fullPosterUrl())
             .transition(DrawableTransitionOptions.withCrossFade())
             .placeholder(R.drawable.placeholder_poster)
-            .into(holder.poster)
+            .into(h.poster)
     }
 
-    private fun bindBanner(holder: BannerViewHolder, item: MovieItem) {
-        holder.name.text = item.name
-        holder.episode.text = item.episodeCurrent ?: "Full"
-        holder.lang.text = item.lang ?: ""
-        holder.categories.text = item.category?.take(3)?.joinToString(" · ") { it.name } ?: ""
-        Glide.with(holder.thumb)
-            .load(item.thumbUrl)
+    private fun bindBanner(h: BannerViewHolder, item: MovieItem) {
+        h.name.text       = item.name
+        h.episode.text    = item.episodeCurrent ?: "Full"
+        h.lang.text       = item.lang ?: ""
+        h.categories.text = item.category?.take(3)?.joinToString(" · ") { it.name } ?: ""
+        Glide.with(h.thumb)
+            .load(item.fullThumbUrl())
             .transition(DrawableTransitionOptions.withCrossFade())
             .placeholder(R.drawable.placeholder_thumb)
-            .into(holder.thumb)
+            .into(h.thumb)
     }
 }
